@@ -16,6 +16,7 @@ import java.util.List;
 
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -25,6 +26,8 @@ import org.talend.core.model.utils.NodeUtil;
 
 import de.crawling.spider.jena.OntologyLoadComponent;
 import de.crawling.spider.jena.managers.OntologyManager;
+import de.crawling.spider.jena.ui.comp.LoadOntologyComposite;
+import de.crawling.spider.jena.ui.comp.ShowOntologyClassComposite;
 
 
 /**
@@ -38,10 +41,10 @@ public class OntologyUI {
     protected OntologyManager foxManager;
 
     private Composite foxUIParent;
-
+    public static final int STYLE = SWT.NONE;
     protected OntologyLoadComponent externalNode;
 
-    private SashForm xmlToSchemaSash;
+    private SashForm sash;
 
     protected TableViewer schemaViewer;
 
@@ -71,7 +74,15 @@ public class OntologyUI {
      * @param child
      */
     private void createContent(Composite mainComposite) {
-        new OntologyComposite(mainComposite);
+        new LoadOntologyComposite(mainComposite);
+        new ShowOntologyClassComposite(mainComposite);
+//        swap(mainComposite);
+        
+        /*sash = new SashForm(mainComposite, SWT.HORIZONTAL | SWT.SMOOTH);
+        sash.setLayoutData(new GridData(GridData.FILL_BOTH));
+        sash.setBackgroundMode(SWT.INHERIT_FORCE);
+        
+        sash.setWeights(new int[] { 40, 60 });*/
     }
 
     /**
@@ -102,6 +113,11 @@ public class OntologyUI {
     public Composite getFoxUIParent(){
     	return this.foxUIParent;
     }
+    
+    
+  
+    
+    
 
     
 }
