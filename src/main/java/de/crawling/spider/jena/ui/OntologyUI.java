@@ -75,7 +75,7 @@ public class OntologyUI {
      */
     private void createContent(Composite mainComposite) {
         new LoadOntologyComposite(mainComposite);
-        new ShowOntologyClassComposite(mainComposite);
+//        new ShowOntologyClassComposite(mainComposite);
 //        swap(mainComposite);
         
         /*sash = new SashForm(mainComposite, SWT.HORIZONTAL | SWT.SMOOTH);
