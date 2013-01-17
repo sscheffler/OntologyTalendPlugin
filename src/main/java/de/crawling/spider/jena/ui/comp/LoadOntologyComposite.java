@@ -14,6 +14,7 @@ package de.crawling.spider.jena.ui.comp;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
@@ -24,18 +25,24 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
+import com.hp.hpl.jena.ontology.DatatypeProperty;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntModelSpec;
+import com.hp.hpl.jena.ontology.OntResource;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.NsIterator;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 
 
@@ -49,6 +56,7 @@ public class LoadOntologyComposite extends AbstractComposite {
 
     private Button loadOntologyButton;
     private Button loadTDBButton;
+    private Button finishButton;
     
     private Button ontologyRadioButton;
     private Button tdbRadioButton;
@@ -58,11 +66,16 @@ public class LoadOntologyComposite extends AbstractComposite {
     
     private FormData ontologyNameSpaceFormData;
     private FormData ontologyClassFormData;
+    private FormData finishFormData;
+    
     private FormData ontologyRadioFormdata;
     private FormData tdbRadioFormData;
     private FormData tdbPathFormData;
+    private FormData propertyTableFormData;
     
+    private Table propertyTable;
     private Text tdbPath;
+    
     private Combo ontologyClassCombo;
     private Combo nameSpaceClassCombo;
     private LoadOntologyComposite thisClass= this;
@@ -72,9 +85,13 @@ public class LoadOntologyComposite extends AbstractComposite {
     
     private Model defaultModel;
     private OntModel ontModel;
+    
+    private String pathString="";
+    private Composite parent = null;
 
     public LoadOntologyComposite(Composite parent) {
         super(parent);
+        this.parent = parent;
 //        createComponents();
 //        this.composite = parent;
         defaultModel= ModelFactory.createDefaultModel();
@@ -121,24 +138,7 @@ public class LoadOntologyComposite extends AbstractComposite {
     	}
     }
     
-    /*Listener listener = new Listener () {
-		public void handleEvent (Event e) {
-			Control [] children = shell.getChildren ();
-			for (int i=0; i<children.length; i++) {
-				Control child = children [i];
-				if (e.widget != child && child instanceof Button && (child.getStyle () & SWT.TOGGLE) != 0) {
-					((Button) child).setSelection (false);
-				}
-			}
-			((Button) e.widget).setSelection (true);
-		}
-	};
-	for (int i=0; i<20; i++) {
-		Button button = new Button (shell, SWT.TOGGLE);
-		button.setText ("B" + i);
-		button.addListener (SWT.Selection, listener);
-		if (i == 0) button.setSelection (true);
-	}*/
+    
     
     private void addRadioSelection(){
     	ontologyRadioButton = new Button(this, SWT.RADIO);
@@ -179,14 +179,14 @@ public class LoadOntologyComposite extends AbstractComposite {
     }
     
     private void toggleLoadOntology(boolean toggle){
-    	this.nameSpaceClassCombo.setVisible(toggle);
-    	this.ontologyClassCombo.setVisible(toggle);
+    	/*this.nameSpaceClassCombo.setVisible(toggle);
+    	this.ontologyClassCombo.setVisible(toggle);*/
     	this.loadOntologyButton.setVisible(toggle);
     	
     }
     
     private void toggleLoadTdb(boolean toggle){
-    	this.tdbPath.setVisible(toggle);
+    	//this.tdbPath.setVisible(toggle);
     	this.loadTDBButton.setVisible(toggle);
     }
     
@@ -213,11 +213,8 @@ public class LoadOntologyComposite extends AbstractComposite {
 					fillNameSpaceList();
 					nameSpaceClassCombo.setEnabled(true);
 					
-					fillOntologyList(nameSpaceClassCombo.getItem(0));
-					
-					
-				}
-				
+					fillOntologyList(nameSpaceClassCombo.getItem(0));	
+				}	
 			}
 			
 			@Override
@@ -246,6 +243,23 @@ public class LoadOntologyComposite extends AbstractComposite {
 		});
     }
     
+    private void addPropertyTable(){
+    	String [] titles={"Property", "Schema"};
+    	propertyTable = new Table(this, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
+    	propertyTable.setEnabled(false);
+    	propertyTable.setLinesVisible(true);
+    	propertyTable.setHeaderVisible(true);
+    	
+    	propertyTableFormData = new FormData(600,300);
+    	
+    	propertyTable.setLayoutData(propertyTableFormData);
+    	
+    	for (int i=0; i<titles.length; i++) {
+    		TableColumn column = new TableColumn (propertyTable, SWT.NONE);
+    		column.setText (titles [i]);
+    	}
+    }
+    
     private void addOntologyCombo(){
     	this.ontologyClassCombo = new Combo(this,STYLE);
     	this.ontologyClassCombo.setEnabled(false);
@@ -253,6 +267,58 @@ public class LoadOntologyComposite extends AbstractComposite {
     	this.ontologyClassFormData.width = 300;
     	this.ontologyClassCombo.setVisibleItemCount(10);
     	ontologyClassCombo.setLayoutData(ontologyClassFormData);
+    	
+    	this.ontologyClassCombo.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				propertyTable.removeAll();
+				
+				int nsIndex = nameSpaceClassCombo.getSelectionIndex();
+				int ontIndex = ontologyClassCombo.getSelectionIndex();
+				
+				String nsItem = nameSpaceClassCombo.getItem(nsIndex);
+				String ontItem = ontologyClassCombo.getItem(ontIndex);
+				String itemName = nsItem+ontItem;
+				
+				TableItem item1 = new TableItem(propertyTable, SWT.NONE);
+				/*item1.setText(0, itemName);
+				propertyTable.getColumn(0).pack();*/
+				
+				OntResource res = ontModel.getOntResource(itemName);
+				StmtIterator it = res.listProperties();
+				ExtendedIterator<DatatypeProperty> dataProps = ontModel.listDatatypeProperties();
+				
+				while(dataProps.hasNext()){
+					DatatypeProperty p = dataProps.next();
+					ExtendedIterator<? extends OntResource> resources = p.listDomain();
+					
+					while(resources.hasNext()){
+						OntResource checkRes = resources.next();
+						if(res.equals(checkRes)){
+							TableEditor editor = new TableEditor(propertyTable);
+							editor.horizontalAlignment=SWT.LEFT;
+							
+							TableItem item = new TableItem(propertyTable, SWT.NONE);
+							item.setText(0, p.getLocalName());
+							Button b = new Button(propertyTable, SWT.CHECK);
+							editor.minimumWidth = b.getSize ().x;
+							b.pack();
+							editor.setEditor(b, item, 1);
+							
+						}
+					};
+				}
+				
+				propertyTable.setEnabled(true);
+				propertyTable.getColumn(0).pack();
+				propertyTable.getColumn(1).pack();
+				
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {}
+		});
     }
     
     private void addTDBComponents(){
@@ -271,6 +337,46 @@ public class LoadOntologyComposite extends AbstractComposite {
     	this.tdbPath.setLayoutData(this.tdbPathFormData);
     	this.loadTDBButton.setLayoutData(this.loadTDBFormData);
     	
+    	loadTDBButton.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				DirectoryDialog dialog = new DirectoryDialog(composite.getShell());
+				if(!pathString.equals(""))dialog.setFilterPath(pathString);
+				
+				String result = dialog.open();
+				pathString = result;
+				
+				if(result != null){
+					defaultModel = TDBFactory.createDataset(result).getDefaultModel();
+					ontModel = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM_RDFS_INF, defaultModel);
+					fillNameSpaceList();
+				}
+				
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {}
+		});
+    	
+    }
+    
+    private void addFinishButton(){
+    	this.finishButton = new Button(this, SWT.NONE);
+    	this.finishFormData = new FormData();
+    	this.finishButton.setText("finish");
+    	this.finishButton.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				parent.setVisible(false);
+				
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {}
+		});
+    	this.finishButton.setLayoutData(this.finishFormData);
     }
     
     @Override
@@ -278,10 +384,10 @@ public class LoadOntologyComposite extends AbstractComposite {
     	this.ontologyRadioFormdata.left = new FormAttachment(0,5);
     	this.tdbRadioFormData.left = new FormAttachment(this.ontologyRadioButton,5);
     	
-    	this.tdbPathFormData.top= new FormAttachment(this.ontologyRadioButton,5);
-    	this.tdbPathFormData.left = new FormAttachment(0,5);
+    	/*this.tdbPathFormData.top= new FormAttachment(this.ontologyRadioButton,5);
+    	this.tdbPathFormData.left = new FormAttachment(0,5);*/
     	
-    	this.loadTDBFormData.left=new FormAttachment(this.tdbPath, 5);
+    	this.loadTDBFormData.left=new FormAttachment(this.ontologyClassCombo, 5);
     	this.loadTDBFormData.top = new FormAttachment(this.ontologyRadioButton, 5);
     	
     	this.ontologyNameSpaceFormData.top= new FormAttachment(this.ontologyRadioButton,5);
@@ -290,6 +396,9 @@ public class LoadOntologyComposite extends AbstractComposite {
     	
     	this.ontologyClassFormData.left = new FormAttachment(this.nameSpaceClassCombo,5);
     	this.loadFromFsFormData.left = new FormAttachment(this.ontologyClassCombo, 5);
+    	
+    	this.propertyTableFormData.top = new FormAttachment(this.nameSpaceClassCombo, 5);
+    	this.finishFormData.top=new FormAttachment(this.propertyTable, 5);
     }
     
 
@@ -306,10 +415,12 @@ public class LoadOntologyComposite extends AbstractComposite {
     	this.setLayout(formLayout);
     	this.addTDBComponents();
     	
+    	this.addPropertyTable();
     	this.addRadioSelection();
         this.addLoadFromFsButton();
         this.addOntologyCombo();
         this.addNameSpaceCombo();
+        this.addFinishButton();
         this.adjustForms();
     	
     }

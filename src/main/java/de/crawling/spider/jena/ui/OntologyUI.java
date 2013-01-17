@@ -27,7 +27,6 @@ import org.talend.core.model.utils.NodeUtil;
 import de.crawling.spider.jena.OntologyLoadComponent;
 import de.crawling.spider.jena.managers.OntologyManager;
 import de.crawling.spider.jena.ui.comp.LoadOntologyComposite;
-import de.crawling.spider.jena.ui.comp.ShowOntologyClassComposite;
 
 
 /**
