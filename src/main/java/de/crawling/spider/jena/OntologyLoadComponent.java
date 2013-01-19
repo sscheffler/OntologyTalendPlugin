@@ -12,6 +12,11 @@
 // ============================================================================
 package de.crawling.spider.jena;
 
+import java.beans.PropertyChangeSupport;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,17 +27,24 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.talend.commons.exception.SystemException;
 import org.talend.commons.ui.runtime.exception.ExceptionHandler;
+import org.talend.commons.utils.system.EnvironmentUtils;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.model.components.IODataComponent;
 import org.talend.core.model.metadata.ColumnNameChanged;
+import org.talend.core.model.metadata.IMetadataColumn;
 import org.talend.core.model.metadata.IMetadataTable;
+import org.talend.core.model.metadata.MetadataColumn;
 import org.talend.core.model.process.AbstractExternalNode;
 import org.talend.core.model.process.EParameterFieldType;
 import org.talend.core.model.process.IComponentDocumentation;
+import org.talend.core.model.process.IConnection;
+import org.talend.core.model.process.IDataConnection;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.process.IExternalData;
+import org.talend.core.model.process.INode;
 import org.talend.core.model.temp.ECodePart;
 import org.talend.designer.codegen.ICodeGeneratorService;
+import org.talend.repository.ui.utils.DataConnection;
 
 /**
  * DOC bqian class global comment. Detailled comment <br/>
@@ -61,6 +73,8 @@ public class OntologyLoadComponent extends AbstractExternalNode {
     public static final String ORDER = "ORDER"; //$NON-NLS-1$
 
     private OntologyMain foxmain;
+    
+    protected PropertyChangeSupport listeners = new PropertyChangeSupport(this);
 
     public OntologyLoadComponent() {
         super();
@@ -89,6 +103,8 @@ public class OntologyLoadComponent extends AbstractExternalNode {
      * @see org.talend.core.model.process.IExternalNode#getExternalData()
      */
     public IExternalData getExternalData() {
+    	
+    	
         return null;
     }
 
@@ -98,9 +114,10 @@ public class OntologyLoadComponent extends AbstractExternalNode {
      * @see org.talend.core.model.process.IExternalNode#open(org.eclipse.swt.widgets.Composite)
      */
     public int open(Composite parent) {
-        return open(parent.getDisplay());
+    	int i = open(parent.getDisplay());
+        return i;
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -109,6 +126,53 @@ public class OntologyLoadComponent extends AbstractExternalNode {
     public int open(Display display) {
         foxmain = new OntologyMain(this);
         Shell shell = foxmain.createUI(display);
+        Exception e;
+        List<Map<String,String>> l=(List<Map>String,String>>)ElementParameterParser.getObjectValue("__PARAMS__");
+        StringBuilder sb = new StringBuilder();
+        for( int i= 0;i<l.size().size();i++){
+        	Map<String, String> m = l.get(i);
+        	sb.append(m.get("COMMAND"));
+        	sb.append(" ");
+        }
+        Process p = new ProcessBuilder("").start();
+        p.
+        IConnection c = this.getOutgoingConnections().get(0);
+        
+        IElementParameter ele = this.getElementParameter("SCHEMA");
+        
+        String s = this.getMetadataList().size()+" - ";
+        Map<String, IElementParameter> map = ele.getChildParameters();
+        IElementParameter type = map.get("SCHEMA_TYPE");
+        
+        IMetadataColumn col = this.getMetadataTable().getListColumns().get(1);
+        MetadataColumn ownCol = new MetadataColumn();
+        ownCol.setLabel("freakstyle");
+        this.getMetadataTable().getListColumns().add(ownCol);
+//        this.getComponent().
+        
+     Map<String, Object> obMap = new HashMap<String, Object>();
+     obMap.put("SCHEMA", type);
+//        this.reloadComponent(this.getComponent(), obMap);
+     listeners.firePropertyChange("SCHEMA", null, type);
+        
+        c.setName(""+this.getMetadataTable().getListColumns().get(3).getLabel()+this.getMetadataTable().getListColumns().size());
+        
+        
+//        c.setName(this.getJobletNode().getElementName());
+        
+        
+//        col.setLabel("wehaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabäääääääääääääääääääääänhungr");
+        /*for(IMetadataTable e:type.ge){
+        	s = s+e.getComment()+" - ";
+        }*/
+        
+//        c.setName(col.getLabel()+col.getComment());
+        
+        
+        
+        
+        
+        
         while (!shell.isDisposed()) {
             try {
                 if (!display.readAndDispatch()) {
