@@ -12,6 +12,12 @@
 // ============================================================================
 package de.crawling.spider.jena.ui.comp;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
@@ -31,6 +37,27 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PlatformUI;
+import org.talend.core.model.components.IODataComponent;
+import org.talend.core.model.metadata.IMetadataTable;
+import org.talend.core.model.metadata.MetadataColumn;
+import org.talend.core.model.metadata.MetadataTable;
+import org.talend.core.model.process.EConnectionType;
+import org.talend.core.model.process.IConnection;
+import org.talend.core.model.process.IExternalNode;
+import org.talend.core.model.process.INode;
+import org.talend.core.model.process.INodeConnector;
+import org.talend.designer.core.model.components.NodeConnector;
+import org.talend.designer.core.ui.AbstractMultiPageTalendEditor;
+import org.talend.designer.core.ui.editor.cmd.ChangeMetadataCommand;
+import org.talend.designer.core.ui.editor.cmd.ConnectionCreateCommand;
+import org.talend.designer.core.ui.editor.cmd.ExternalNodeChangeCommand;
+import org.talend.designer.core.ui.editor.nodes.Node;
+import org.talend.designer.core.ui.editor.properties.controllers.ColumnListController;
+import org.talend.designer.core.ui.editor.properties.controllers.generator.ColumnListGenerator;
+
+import ca.uhn.hl7v2.conf.spec.MetaData;
 
 import com.hp.hpl.jena.ontology.DatatypeProperty;
 import com.hp.hpl.jena.ontology.OntClass;
@@ -40,10 +67,12 @@ import com.hp.hpl.jena.ontology.OntResource;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.NsIterator;
-import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
+
+import de.crawling.spider.jena.OntologyLoadComponent;
+import de.crawling.spider.jena.commands.SetMetaDataCommand;
 
 
 /**
@@ -88,6 +117,8 @@ public class LoadOntologyComposite extends AbstractComposite {
     
     private String pathString="";
     private Composite parent = null;
+    
+    private OntologyLoadComponent externalNode = null;
 
     public LoadOntologyComposite(Composite parent) {
         super(parent);
@@ -95,6 +126,10 @@ public class LoadOntologyComposite extends AbstractComposite {
 //        createComponents();
 //        this.composite = parent;
         defaultModel= ModelFactory.createDefaultModel();
+    }
+    
+    public void setExternalNode(OntologyLoadComponent node){
+    	this.externalNode = node;
     }
     
     private void fillNameSpaceList() {
@@ -148,10 +183,11 @@ public class LoadOntologyComposite extends AbstractComposite {
     	
     	ontologyRadioButton.setText("Load Ontology");
     	tdbRadioButton.setText("Load TDB");
-    	ontologyRadioButton.setSelection(true);
-    	
+//    	ontologyRadioButton.to.setSelection(true);
+    	tdbRadioButton.setSelection(true);
     	ontologyRadioButton.setLayoutData(ontologyRadioFormdata);
         tdbRadioButton.setLayoutData(tdbRadioFormData);
+        
         
         SelectionListener listener = new SelectionListener() {
 			@Override
@@ -194,6 +230,7 @@ public class LoadOntologyComposite extends AbstractComposite {
     	loadOntologyButton = new Button(this, SWT.NONE);
     	
     	loadOntologyButton.setText(/*Messages.getString("OntologyComposite.loadFromFs")*/"Load");
+    	loadOntologyButton.setVisible(false);
     	loadFromFsFormData = new FormData();
         Point minSize = loadOntologyButton.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
         loadFromFsFormData.width = Math.max(IDialogConstants.BUTTON_WIDTH, minSize.x);
@@ -282,8 +319,6 @@ public class LoadOntologyComposite extends AbstractComposite {
 				String itemName = nsItem+ontItem;
 				
 				TableItem item1 = new TableItem(propertyTable, SWT.NONE);
-				/*item1.setText(0, itemName);
-				propertyTable.getColumn(0).pack();*/
 				
 				OntResource res = ontModel.getOntResource(itemName);
 				StmtIterator it = res.listProperties();
@@ -291,6 +326,11 @@ public class LoadOntologyComposite extends AbstractComposite {
 				
 				while(dataProps.hasNext()){
 					DatatypeProperty p = dataProps.next();
+					if(("".equals(p.getLocalName().trim()))||p.getLocalName()==null){
+						continue;
+					}
+					
+					
 					ExtendedIterator<? extends OntResource> resources = p.listDomain();
 					
 					while(resources.hasNext()){
@@ -325,7 +365,7 @@ public class LoadOntologyComposite extends AbstractComposite {
     	this.tdbPath = new Text(this, SWT.SINGLE);
     	this.loadTDBButton = new Button(this,SWT.NONE);
     	this.loadTDBButton.setText("Load TDB");
-    	this.loadTDBButton.setVisible(false);
+    	this.loadTDBButton.setVisible(true);
     	this.tdbPath.setVisible(false);
     	this.tdbPath.setEditable(false);
     	
@@ -368,9 +408,31 @@ public class LoadOntologyComposite extends AbstractComposite {
     	this.finishButton.addSelectionListener(new SelectionListener() {
 			
 			@Override
-			public void widgetSelected(SelectionEvent arg0) {
-				parent.setVisible(false);
+			public void widgetSelected(SelectionEvent arg0) {				
+				SetMetaDataCommand cl= new SetMetaDataCommand(externalNode, propertyTable.getItems());
+				cl.execute();
+
 				
+				
+//				ChangeMetadataCommand cmd = new ChangeMetadataCommand(externalNode, null, null, t);
+//				cmd.execute();
+			//	 IWorkbenchPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+
+		            /*if (externalNode != null && (part instanceof AbstractMultiPageTalendEditor)) {
+		                INode node = externalNode.getOriginalNode();
+		                if (node != null && node instanceof Node) {
+		                    Command cmd = new ExternalNodeChangeCommand((Node) node, externalNode);
+		                    CommandStack cmdStack = (CommandStack) part.getAdapter(CommandStack.class);
+		                    cmdStack.execute(cmd);
+		                }}*/
+				
+				parent.setVisible(false);
+				try {
+					throw new Exception("test");
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			
 			@Override
@@ -421,6 +483,7 @@ public class LoadOntologyComposite extends AbstractComposite {
         this.addOntologyCombo();
         this.addNameSpaceCombo();
         this.addFinishButton();
+        this.addRadioSelection();
         this.adjustForms();
     	
     }
