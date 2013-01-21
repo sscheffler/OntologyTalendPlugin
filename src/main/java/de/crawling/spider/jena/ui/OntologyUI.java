@@ -27,7 +27,6 @@ import org.talend.core.model.utils.NodeUtil;
 import de.crawling.spider.jena.OntologyLoadComponent;
 import de.crawling.spider.jena.managers.OntologyManager;
 import de.crawling.spider.jena.ui.comp.LoadOntologyComposite;
-import de.crawling.spider.jena.ui.comp.ShowOntologyClassComposite;
 
 
 /**
@@ -38,21 +37,18 @@ import de.crawling.spider.jena.ui.comp.ShowOntologyClassComposite;
  */
 public class OntologyUI {
 
-    protected OntologyManager foxManager;
+    protected OntologyManager ontManager;
 
     private Composite foxUIParent;
     public static final int STYLE = SWT.NONE;
     protected OntologyLoadComponent externalNode;
-
-    private SashForm sash;
+    private LoadOntologyComposite loadComp = null;
 
     protected TableViewer schemaViewer;
 
-    protected TreeViewer xmlViewer;
-
     public OntologyUI(Composite parent, OntologyManager ontologyManager) {
-        this.foxManager = ontologyManager;
-        this.foxManager.getUiManager().setFoxUI(this);
+        this.ontManager = ontologyManager;
+        this.ontManager.getUiManager().setFoxUI(this);
         externalNode = ontologyManager.getFoxComponent();
 
         // add listeners.
@@ -74,15 +70,8 @@ public class OntologyUI {
      * @param child
      */
     private void createContent(Composite mainComposite) {
-        new LoadOntologyComposite(mainComposite);
-        new ShowOntologyClassComposite(mainComposite);
-//        swap(mainComposite);
-        
-        /*sash = new SashForm(mainComposite, SWT.HORIZONTAL | SWT.SMOOTH);
-        sash.setLayoutData(new GridData(GridData.FILL_BOTH));
-        sash.setBackgroundMode(SWT.INHERIT_FORCE);
-        
-        sash.setWeights(new int[] { 40, 60 });*/
+        this.loadComp = new LoadOntologyComposite(mainComposite);
+        this.loadComp.setExternalNode(externalNode);
     }
 
     /**
@@ -102,7 +91,7 @@ public class OntologyUI {
      * @return
      */
     public IConnection getConnection() {
-        List<? extends IConnection> incomingConnections = NodeUtil.getIncomingConnections(foxManager.getFoxComponent(),
+        List<? extends IConnection> incomingConnections = NodeUtil.getIncomingConnections(ontManager.getFoxComponent(),
                 IConnectionCategory.FLOW);
         if (incomingConnections.size() > 0) {
             return incomingConnections.get(0);

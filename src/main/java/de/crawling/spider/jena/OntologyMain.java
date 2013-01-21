@@ -14,6 +14,11 @@ package de.crawling.spider.jena;
 
 import java.util.List;
 
+
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
@@ -28,6 +33,7 @@ import org.talend.core.model.process.IConnection;
 import org.talend.core.ui.images.CoreImageProvider;
 
 import de.crawling.spider.jena.i18n.Messages;
+import de.crawling.spider.jena.log.Log;
 import de.crawling.spider.jena.managers.OntologyManager;
 import de.crawling.spider.jena.ui.OntologyUI;
 
@@ -38,6 +44,8 @@ import de.crawling.spider.jena.ui.OntologyUI;
  * 
  */
 public class OntologyMain {
+	
+	
 
     private boolean standAloneMode = false;
 
@@ -48,9 +56,12 @@ public class OntologyMain {
     private OntologyManager ontologyManager;
 
     public OntologyMain(OntologyLoadComponent connector) {
+    	Log.info("Starting plugin");
         this.connector = connector;
         this.ontologyManager = new OntologyManager(connector);
     }
+    
+    
 
     /**
      * create UI".
@@ -59,9 +70,10 @@ public class OntologyMain {
      * @return
      */
     public void createUI(Composite parent) {
-        
         generatorUI = new OntologyUI(parent, ontologyManager);
         generatorUI.init();
+        
+        
 
     }
 

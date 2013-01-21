@@ -12,27 +12,43 @@
 // ============================================================================
 package de.crawling.spider.jena;
 
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Set;
+import org.eclipse.core.commands.Command;
+import org.eclipse.osgi.internal.loader.BundleLoader;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.talend.commons.exception.SystemException;
 import org.talend.commons.ui.runtime.exception.ExceptionHandler;
+import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.model.components.IODataComponent;
 import org.talend.core.model.metadata.ColumnNameChanged;
+import org.talend.core.model.metadata.IMetadataColumn;
 import org.talend.core.model.metadata.IMetadataTable;
+import org.talend.core.model.metadata.MetadataColumn;
+import org.talend.core.model.metadata.builder.connection.MetadataTable;
 import org.talend.core.model.process.AbstractExternalNode;
+import org.talend.core.model.process.EConnectionType;
 import org.talend.core.model.process.EParameterFieldType;
 import org.talend.core.model.process.IComponentDocumentation;
+import org.talend.core.model.process.IConnection;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.process.IExternalData;
+import org.talend.core.model.process.INodeConnector;
 import org.talend.core.model.temp.ECodePart;
 import org.talend.designer.codegen.ICodeGeneratorService;
+import org.talend.designer.core.IDesignerCoreService;
+import org.talend.designer.rowgenerator.data.TalendType;
+
+import de.crawling.spider.jena.log.Log;
 
 /**
  * DOC bqian class global comment. Detailled comment <br/>
@@ -61,9 +77,14 @@ public class OntologyLoadComponent extends AbstractExternalNode {
     public static final String ORDER = "ORDER"; //$NON-NLS-1$
 
     private OntologyMain foxmain;
+    
+    protected PropertyChangeSupport listeners = new PropertyChangeSupport(this);
 
     public OntologyLoadComponent() {
+
         super();
+        Log.info("Construct Ontology LoadComponent");
+//        String e  = this.getConnectorFromType(EConnectionType.FLOW_MAIN).getName();
     }
 
     /*
@@ -89,6 +110,8 @@ public class OntologyLoadComponent extends AbstractExternalNode {
      * @see org.talend.core.model.process.IExternalNode#getExternalData()
      */
     public IExternalData getExternalData() {
+    	
+    	
         return null;
     }
 
@@ -98,17 +121,104 @@ public class OntologyLoadComponent extends AbstractExternalNode {
      * @see org.talend.core.model.process.IExternalNode#open(org.eclipse.swt.widgets.Composite)
      */
     public int open(Composite parent) {
-        return open(parent.getDisplay());
+    	Log.info("Detect open");
+    	int i = open(parent.getDisplay());
+        return i;
     }
-
+    
     /*
      * (non-Javadoc)
      * 
      * @see org.talend.core.model.process.IExternalNode#open(org.eclipse.swt.widgets.Display)
      */
     public int open(Display display) {
+    	Log.info("Detect open 2");
         foxmain = new OntologyMain(this);
         Shell shell = foxmain.createUI(display);
+        /*IConnection c = this.getOutgoingConnections().get(0);
+        
+        IElementParameter ele = this.getElementParameter("SCHEMA");
+        
+        String s = this.getMetadataList().size()+" - ";*/
+//        Map<String, IElementParameter> map = ele.getChildParameters();
+  //      IElementParameter type = map.get("SCHEMA_TYPE");
+        
+//        IMetadataColumn col = this.getMetadataTable().getListColumns().get(1);
+        /*MetadataColumn ownCol = new MetadataColumn();
+        ownCol.setLabel("freakstyle");
+        ownCol.setId("freak");
+        ownCol.setTalendType("id_String");
+        ownCol.setComment("bla_com");
+        ownCol.setCustomId(1);
+        ownCol.setDefault("default");
+        ownCol.setType("String");*/
+        
+        
+        
+//        this.getMetadataTable();
+//        this.getComponent().
+//        List<MetadataTable> l = new ArrayList<MetadataTable>();
+//        this.renameMetadataColumnName(c.getName(), "test", "bla");
+        
+//     Map<String, Object> obMap = new HashMap<String, Object>();
+    // obMap.put("SCHEMA", type);
+//        this.reloadComponent(this.getComponent(), obMap);
+//     listeners.firePropertyChange("SCHEMA", null, type);
+//     IDesignerCoreService designerCoreService = CorePlugin.getDefault().getDesignerCoreService();
+//     IMetadataTable t = c.getMetadataTable();
+     
+     //t.getListColumns().add(ownCol);
+     
+     /*String str = "";
+    
+     IElementParameter para = this.getElementParameter("NOT_SYNCHRONIZED_SCHEMA").getChildParameters().get("SCHEMA_TYPE");
+     Button b ;*/
+     
+     
+     
+     /*for(INodeConnector p : this.getListConnector()){
+    	 str = str+ " - "+p;
+     }*/
+     /*List<INodeConnector> list = new ArrayList<INodeConnector>();
+     INodeConnector connector = new NodeConnector(this);
+     connector.setDefaultConnectionType(EConnectionType.FLOW_MAIN);
+     connector.setName("FLOW");
+     list.add(connector);*/
+//     list.add(this.getConnectorFromName("FLOW"));
+//     INodeConnector con1 = this.getConnectorFromName(t.getAttachedConnector());
+//     String schema = con1.getBaseSchema();
+//     this.setListConnector(list);this.getConnectorFromName("FLOW");
+//     c.setName("test: "+t.getColumn("a").getTalendType()+" - " +t.getColumn("a").getType());
+     /*ChangeMetadataCommand command = new ChangeMetadataCommand(this, para, c.getMetadataTable(), t);
+     command.execute();*/
+//     new ChangeMetadataCommand(node, param, null, null, null,
+//             originaleOutputTable, outputMetaCopy);
+     
+//     designerCoreService.sett
+     
+     
+//     Set<String>set = new HashSet<String>();
+     
+//     designerCoreService.
+//     designerCoreService.setTraceFilterParameters(this, this.getMetadataTable(), set, hashMap);
+     //+this.getMetadataTable().getListColumns().get(3).getLabel()+this.getMetadataTable().getListColumns().size());
+        
+        
+//        c.setName(this.getJobletNode().getElementName());
+        
+        
+//        col.setLabel("wehaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabäääääääääääääääääääääänhungr");
+        /*for(IMetadataTable e:type.ge){
+        	s = s+e.getComment()+" - ";
+        }*/
+        
+//        c.setName(col.getLabel()+col.getComment());
+        
+        
+        
+        
+        
+        
         while (!shell.isDisposed()) {
             try {
                 if (!display.readAndDispatch()) {
