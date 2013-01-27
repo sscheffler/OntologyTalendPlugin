@@ -15,9 +15,6 @@ package de.crawling.spider.jena.ui.comp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import org.eclipse.gef.commands.Command;
-import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
@@ -48,16 +45,6 @@ import org.talend.core.model.process.IConnection;
 import org.talend.core.model.process.IExternalNode;
 import org.talend.core.model.process.INode;
 import org.talend.core.model.process.INodeConnector;
-import org.talend.designer.core.model.components.NodeConnector;
-import org.talend.designer.core.ui.AbstractMultiPageTalendEditor;
-import org.talend.designer.core.ui.editor.cmd.ChangeMetadataCommand;
-import org.talend.designer.core.ui.editor.cmd.ConnectionCreateCommand;
-import org.talend.designer.core.ui.editor.cmd.ExternalNodeChangeCommand;
-import org.talend.designer.core.ui.editor.nodes.Node;
-import org.talend.designer.core.ui.editor.properties.controllers.ColumnListController;
-import org.talend.designer.core.ui.editor.properties.controllers.generator.ColumnListGenerator;
-
-import ca.uhn.hl7v2.conf.spec.MetaData;
 
 import com.hp.hpl.jena.ontology.DatatypeProperty;
 import com.hp.hpl.jena.ontology.OntClass;

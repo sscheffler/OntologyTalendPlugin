@@ -38,6 +38,7 @@ import org.talend.core.model.metadata.builder.connection.MetadataTable;
 import org.talend.core.model.process.AbstractExternalNode;
 import org.talend.core.model.process.EConnectionType;
 import org.talend.core.model.process.EParameterFieldType;
+import org.talend.core.model.process.ElementParameterParser;
 import org.talend.core.model.process.IComponentDocumentation;
 import org.talend.core.model.process.IConnection;
 import org.talend.core.model.process.IElementParameter;
@@ -46,8 +47,6 @@ import org.talend.core.model.process.INodeConnector;
 import org.talend.core.model.temp.ECodePart;
 import org.talend.designer.codegen.ICodeGeneratorService;
 import org.talend.designer.core.IDesignerCoreService;
-import org.talend.designer.core.model.components.NodeConnector;
-import org.talend.designer.core.ui.editor.cmd.ChangeMetadataCommand;
 import org.talend.designer.rowgenerator.data.TalendType;
 
 import de.crawling.spider.jena.log.Log;
@@ -137,9 +136,13 @@ public class OntologyLoadComponent extends AbstractExternalNode {
     	Log.info("Detect open 2");
         foxmain = new OntologyMain(this);
         Shell shell = foxmain.createUI(display);
-        /*IConnection c = this.getOutgoingConnections().get(0);
+        IConnection c = this.getOutgoingConnections().get(0);
+        c.getMetadataTable().getListColumns();
         
-        IElementParameter ele = this.getElementParameter("SCHEMA");
+        IMetadataColumn column =c.getMetadataTable().getListColumns().get(0);
+        
+        
+        /*IElementParameter ele = this.getElementParameter("SCHEMA");
         
         String s = this.getMetadataList().size()+" - ";*/
 //        Map<String, IElementParameter> map = ele.getChildParameters();

@@ -1,22 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?eclipse version="3.0"?>
 
-<!--
- <copyright>
- </copyright>
-
- $Id$
--->
 
 <plugin>
-   <extension
-         point="org.talend.core.external_component">
-      <ExternalComponent
-            class="de.crawling.spider.jena.OntologyLoadComponent">
-      </ExternalComponent>
+   <extension point="org.talend.core.external_component">
+      <ExternalComponent class="de.crawling.spider.jena.OntologyLoadComponent" />
    </extension>
-
-   
-
 
 </plugin>
